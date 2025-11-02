@@ -17,13 +17,21 @@ jobs:
           set -euo pipefail
           echo "开始触发 Dify 工作流..."
 
-          # ⚠️ 请在这里替换你的 workflow_id
+          # ⚠️ 你的工作流 ID（不要带 /develop）
           WORKFLOW_ID="8f095b8e-6682-41d1-bc12-bc6d501f3a39"
+
+          # ⚙️ 自定义输入信息
+          JSON_DATA=$(jq -n \
+            --arg user "abc-123" \
+            '{inputs: {user: $user}}')
+
+          echo "请求体为："
+          echo "$JSON_DATA"
 
           curl --fail --show-error \
             -X POST "${DIFY_BASE_URL}/workflows/${WORKFLOW_ID}/run" \
             -H "Authorization: Bearer ${DIFY_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d '{"inputs": {"message": "来自 GitHub Actions 的定时触发"}}'
+            -d "$JSON_DATA"
 
           echo "✅ Dify 触发完成"
