@@ -18,7 +18,7 @@ jobs:
           echo "开始触发 Dify 工作流..."
 
           # ⚠️ 请在这里替换你的 workflow_id
-          WORKFLOW_ID="8f095b8e-6682-41d1-bc12-bc6d501f3a39/develop"
+          WORKFLOW_ID="8f095b8e-6682-41d1-bc12-bc6d501f3a39"
 
           curl --fail --show-error \
             -X POST "${DIFY_BASE_URL}/workflows/${WORKFLOW_ID}/run" \
