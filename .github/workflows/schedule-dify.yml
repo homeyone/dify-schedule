@@ -1,40 +1,44 @@
-name: schedule-dify-trigger
+name: schedule-multiple-dify-workflows
 
 on:
   schedule:
-    - cron: "0 16 * * *"   # 每天北京时间 00:00 执行（16:00 UTC）
-  workflow_dispatch: {}    # 支持手动运行测试
+    - cron: "0 16 * * *"   # 每天北京时间 00:00 执行
+  workflow_dispatch: {}    # 可手动运行测试
 
 jobs:
-  call-dify:
+  trigger-all:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Dify workflow (with metadata)
+      - name: Trigger multiple Dify workflows
         env:
           DIFY_BASE_URL: ${{ secrets.DIFY_BASE_URL }}
-          DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
+          DIFY_API_KEYS: ${{ secrets.DIFY_API_KEYS }}
         run: |
           set -euo pipefail
-          echo "开始触发 Dify 工作流（带执行者与时间戳）..."
+          echo "开始批量触发多个 Dify 工作流..."
 
-          # 生成 ISO 格式时间戳
+          # 自动生成时间戳
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           USER="${{ github.actor }}"
 
-          # 生成请求体（带 user 和 trigger_time）
-          JSON_DATA=$(jq -n \
-            --arg user "$USER" \
-            --arg time "$TIMESTAMP" \
-            '{inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
+          # 将多个 API Key 用英文逗号分隔存储在 Secrets 中
+          IFS=',' read -ra KEYS <<< "$DIFY_API_KEYS"
 
-          echo "请求体："
-          echo "$JSON_DATA"
+          for key in "${KEYS[@]}"; do
+            echo "➡️ 触发 Dify 工作流，使用 Key: ${key:0:10}..."
 
-          # 发起请求
-          curl --fail --show-error \
-            -X POST "${DIFY_BASE_URL}/workflows/run" \
-            -H "Authorization: Bearer ${DIFY_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "$JSON_DATA"
+            JSON_DATA=$(jq -n \
+              --arg user "$USER" \
+              --arg time "$TIMESTAMP" \
+              '{inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
 
-          echo "✅ Dify 工作流触发完成"
+            curl --fail --show-error \
+              -X POST "${DIFY_BASE_URL}/workflows/run" \
+              -H "Authorization: Bearer ${key}" \
+              -H "Content-Type: application/json" \
+              -d "$JSON_DATA"
+
+            echo "✅ 触发完成"
+          done
+
+          echo "🎉 所有工作流触发完成"
