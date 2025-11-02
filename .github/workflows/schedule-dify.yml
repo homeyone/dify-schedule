@@ -9,22 +9,28 @@ jobs:
   call-dify:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Dify workflow (new API)
+      - name: Trigger Dify workflow (with metadata)
         env:
           DIFY_BASE_URL: ${{ secrets.DIFY_BASE_URL }}
           DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
         run: |
           set -euo pipefail
-          echo "开始触发 Dify 工作流（新版 API）..."
+          echo "开始触发 Dify 工作流（带执行者与时间戳）..."
 
-          # ⚙️ 你不需要 workflow_id，只要 /v1/workflows/run
+          # 生成 ISO 格式时间戳
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          USER="${{ github.actor }}"
+
+          # 生成请求体（带 user 和 trigger_time）
           JSON_DATA=$(jq -n \
-            --arg user "${{ github.actor }}" \
-            '{inputs: {}, response_mode: "streaming", user: $user}')
+            --arg user "$USER" \
+            --arg time "$TIMESTAMP" \
+            '{inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
 
           echo "请求体："
           echo "$JSON_DATA"
 
+          # 发起请求
           curl --fail --show-error \
             -X POST "${DIFY_BASE_URL}/workflows/run" \
             -H "Authorization: Bearer ${DIFY_API_KEY}" \
