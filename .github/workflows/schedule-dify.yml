@@ -9,29 +9,26 @@ jobs:
   call-dify:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Dify workflow
+      - name: Trigger Dify workflow (new API)
         env:
           DIFY_BASE_URL: ${{ secrets.DIFY_BASE_URL }}
           DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
         run: |
           set -euo pipefail
-          echo "开始触发 Dify 工作流..."
+          echo "开始触发 Dify 工作流（新版 API）..."
 
-          # ⚠️ 你的工作流 ID（不要带 /develop）
-          WORKFLOW_ID="8f095b8e-6682-41d1-bc12-bc6d501f3a39"
-
-          # ⚙️ 自定义输入信息
+          # ⚙️ 你不需要 workflow_id，只要 /v1/workflows/run
           JSON_DATA=$(jq -n \
-            --arg user "GitHub" \
-            '{inputs: {user: $user}}')
+            --arg user "${{ github.actor }}" \
+            '{inputs: {}, response_mode: "streaming", user: $user}')
 
-          echo "请求体为："
+          echo "请求体："
           echo "$JSON_DATA"
 
           curl --fail --show-error \
-            -X POST "${DIFY_BASE_URL}/workflows/${WORKFLOW_ID}/run" \
+            -X POST "${DIFY_BASE_URL}/workflows/run" \
             -H "Authorization: Bearer ${DIFY_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$JSON_DATA"
 
-          echo "✅ Dify 触发完成"
+          echo "✅ Dify 工作流触发完成"
