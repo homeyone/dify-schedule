@@ -30,7 +30,7 @@ jobs:
             JSON_DATA=$(jq -n \
               --arg user "$USER" \
               --arg time "$TIMESTAMP" \
-              '{inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
+              {inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
 
             curl --fail --show-error \
               -X POST "${DIFY_BASE_URL}/workflows/run" \
