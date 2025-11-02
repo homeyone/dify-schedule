@@ -2,8 +2,8 @@ name: schedule-multiple-dify-workflows
 
 on:
   schedule:
-    - cron: "0 16 * * *"   # 每天北京时间 00:00 执行
-  workflow_dispatch: {}    # 可手动运行测试
+    - cron: "*/20 * * * *"   # 每天北京时间 00:00 执行
+  workflow_dispatch: {}    # 支持手动运行
 
 jobs:
   trigger-all:
@@ -30,7 +30,7 @@ jobs:
             JSON_DATA=$(jq -n \
               --arg user "$USER" \
               --arg time "$TIMESTAMP" \
-              {inputs: {}, response_mode: "streaming", user: $user, trigger_time: $time}')
+              '{"inputs": {}, "response_mode": "streaming", "user": $user, "trigger_time": $time}')
 
             curl --fail --show-error \
               -X POST "${DIFY_BASE_URL}/workflows/run" \
