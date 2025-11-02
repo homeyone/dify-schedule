@@ -3,7 +3,7 @@ name: schedule-dify-trigger
 on:
   schedule:
     - cron: "0 16 * * *"   # 每天北京时间 00:00 执行（16:00 UTC）
-  workflow_dispatch: {}    # 手动触发按钮（测试用）
+  workflow_dispatch: {}    # 支持手动运行测试
 
 jobs:
   call-dify:
@@ -16,11 +16,14 @@ jobs:
         run: |
           set -euo pipefail
           echo "开始触发 Dify 工作流..."
-          
+
+          # ⚠️ 请在这里替换你的 workflow_id
+          WORKFLOW_ID="8f095b8e-6682-41d1-bc12-bc6d501f3a39/develop"
+
           curl --fail --show-error \
-            -X POST "${DIFY_BASE_URL}/api/v1/workflows/trigger" \
+            -X POST "${DIFY_BASE_URL}/workflows/${WORKFLOW_ID}/run" \
             -H "Authorization: Bearer ${DIFY_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d '{"input": {"message": "来自 GitHub Actions 的定时触发"}}'
+            -d '{"inputs": {"message": "来自 GitHub Actions 的定时触发"}}'
 
           echo "✅ Dify 触发完成"
