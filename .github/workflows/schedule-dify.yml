@@ -22,7 +22,7 @@ jobs:
 
           # ⚙️ 自定义输入信息
           JSON_DATA=$(jq -n \
-            --arg user "abc-123" \
+            --arg user "GitHub" \
             '{inputs: {user: $user}}')
 
           echo "请求体为："
